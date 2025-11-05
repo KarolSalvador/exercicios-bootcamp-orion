@@ -1,0 +1,66 @@
+version: "3.8"
+
+# Define um volume nomeado para garantir a persistência dos dados no banco
+# mesmo após executar 'docker compose down'
+volumes:
+  postgres_data:
+    name: exercicio2_postgres_data
+
+services:
+  # Serviço 1: Banco de Dados (PostgreSQL)
+  db:
+    container_name: postgres_db_exercicio2
+    # 1. Usa a imagem oficial (postgres)
+    image: postgres:15-alpine
+    restart: always
+
+    # 2. Configuração de variáveis de ambiente do PostgreSQL
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+
+    # 3. Configura volume para persistência
+    volumes:
+      # Mapeia o volume nomeado para o diretório interno do Postgres responsável pelos dados persistentes
+      - postgres_data:/var/lib/postgresql/data
+
+    # 4. Adiciona Healthcheck para dependência
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Serciço 2: API
+  api:
+    container_name: api_exercicio2
+    # Build via Dockerfile
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    restart: always
+
+    # Exposição de porta para o acesso externo
+    ports:
+      - "3000:3000"
+
+    # Volumes de desenvolvimento: permite alteração no código sem rebuild
+    volumes:
+      - ./api:/usr/src/app
+
+    # Variáveis de ambiente para a API
+    environment:
+      # O DB_HOST é o nome do serviço do banco de dados (Critério do exercício)
+      DB_HOST: db
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      NODE_ENV: development
+
+    # Garante que a API só tentará iniciar após o DB estar OK (usando o Healthcheck)
+    depends_on:
+      db:
+        condition: service_healthy
+
+    command: npm start
