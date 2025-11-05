@@ -1,0 +1,7 @@
+# Exclui pastas e arquivos que não são necessários na imagem
+# Boa Prática: Imagens leves (Critério de Sucesso)
+
+node_modules
+npm-debug.log
+.git
+.gitignore
