@@ -10,8 +10,8 @@ CREATE TABLE cursos (
 CREATE TABLE alunos (
   id SERIAL PRIMARY KEY,
   nome VARCHAR(100) NOT NULL,
-  email VARCHAR(100) UNIQUE NOT NULL, -- uso do UNIQUE para evitar emails duplicados
-  curso_id INTEGER, -- tipo INTEGER para referenciar a coluna ID da tabela cursos
+  email VARCHAR(100) UNIQUE NOT NULL, 
+  curso_id INTEGER, 
 
   -- Configure curso_id como uma Chave Estrangeira (FK) que se relaciona com o id da tabela cursos.
   CONSTRAINT fk_curso
